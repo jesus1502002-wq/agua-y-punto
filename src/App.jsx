@@ -31,7 +31,7 @@ export default function App() {
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [passwordError, setPasswordError] = useState(false);
   
-  // Configuración del negocio
+  // Configuración del negocio (Interruptores)
   const [isOpen, setIsOpen] = useState(true);
   const [hasStock, setHasStock] = useState(true);
 
@@ -50,8 +50,8 @@ export default function App() {
   const totalUSD = subtotal + DELIVERY_FEE;
   const totalBs = bcvRate ? (totalUSD * bcvRate) : 0;
 
-  // Clave Administrador
-const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "adminRolmax.15";
+  // Clave Administrador protegida por variable de entorno
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "1234";
 
   // Datos Pago Móvil
   const PAGO_MOVIL_BANCO = "Bancamiga";
@@ -296,6 +296,14 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "adminRolmax.15";
           {!isAdmin ? (
             activeTab === 'order' ? (
               <>
+                {/* Alerta si el negocio está cerrado o sin stock */}
+                {(!isOpen || !hasStock) && (
+                  <div className="bg-amber-500 text-slate-900 p-3 rounded-2xl flex items-center gap-2 text-xs font-bold shadow-md">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+                    <span>{!isOpen ? "Lo sentimos, el negocio se encuentra cerrado en este momento." : "Temporalmente sin stock de botellones."}</span>
+                  </div>
+                )}
+
                 {/* Banner Tasa BCV */}
                 <div className="bg-sky-500 text-slate-900 p-3 rounded-2xl flex justify-between items-center text-xs shadow-sm font-semibold">
                   <div className="flex items-center gap-2">
@@ -541,7 +549,7 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "adminRolmax.15";
               </div>
             )
           ) : (
-            /* VISTA DUEÑO */
+            /* VISTA DUEÑO CON INTERRUPTORES RESTAURADOS */
             <div className="space-y-4">
               <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-1">
@@ -555,8 +563,41 @@ const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "adminRolmax.15";
                 </button>
               </div>
 
+              {/* Interruptores de Control de Negocio */}
+              <div className="bg-white p-4 rounded-2xl shadow-sm space-y-3 border border-slate-200">
+                <h3 className="text-xs font-black uppercase text-slate-700 tracking-wider">Control Operativo</h3>
+                
+                {/* Interruptor Abierto/Cerrado */}
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-700">Estado del Local:</span>
+                  <button 
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+                      isOpen ? 'bg-emerald-500 text-white shadow-md' : 'bg-rose-500 text-white shadow-md'
+                    }`}
+                  >
+                    <Power className="w-3.5 h-3.5" />
+                    <span>{isOpen ? 'ABIERTO' : 'CERRADO'}</span>
+                  </button>
+                </div>
+
+                {/* Interruptor Stock */}
+                <div className="flex justify-between items-center pt-2 border-t border-slate-100">
+                  <span className="text-xs font-bold text-slate-700">Disponibilidad de Botellones:</span>
+                  <button 
+                    onClick={() => setHasStock(!hasStock)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 ${
+                      hasStock ? 'bg-sky-600 text-white shadow-md' : 'bg-slate-400 text-white'
+                    }`}
+                  >
+                    <span>{hasStock ? 'CON STOCK' : 'AGOTADO'}</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Pedidos Recibidos */}
               <div className="space-y-3">
+                <h3 className="text-xs font-black uppercase text-slate-700 tracking-wider">Pedidos en Curso</h3>
                 {adminOrders.length === 0 ? (
                   <div className="bg-white rounded-2xl p-6 text-center text-slate-500 text-xs shadow-sm font-semibold">
                     No hay pedidos pendientes.
